@@ -5,9 +5,11 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var usersRouter = require('./routes/usersRoute');
 
 var app = express();
+
+const mongoose = require('mongoose');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -19,6 +21,17 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//connect to mongoDB
+mongoose.connect('mongodb://localhost:27017/trs', {useNewUrlParser: true})
+    .then(()=> {
+      let message = "Successfully connected to MongoDB";
+      console.log(message);
+    }).catch((err)=>{
+      let message = "Cannot Connected to MongoDB " + err;
+      console.log(message);
+    });
+
+//routes
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
