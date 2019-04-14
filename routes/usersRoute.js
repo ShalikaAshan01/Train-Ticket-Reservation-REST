@@ -41,7 +41,7 @@ router.put('/:nic/paymentmethod',(req,res)=>{
 /**
  * in this put method will update user information
  */
-router.put('/:nic', (req, res) => {
+router.patch('/:nic', (req, res) => {
     userController.updateProfile(req.params.nic, req.body, req.headers)
         .then(data => {
             res.status(data.status).send({success: data.success, message: data.message})
@@ -54,7 +54,7 @@ router.put('/:nic', (req, res) => {
  *
  */
 router.put('/:nic/changepassword', (req, res) => {
-    userController.updatePassword(req.params.nic, req.body.password)
+    userController.updatePassword(req.params.nic, req.body.password, req.headers)
         .then(data => {
             res.status(data.status).send({success: data.success, message: data.message});
         }).catch(err => {

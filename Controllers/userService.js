@@ -184,20 +184,22 @@ userService.updateProfile = function (nic, data, header) {
     };
     return new Promise(function (resolve, reject) {
         //if user token invalid reject the request
-        isLoggedUser(header._token, header._id).then(res => {
-            if (!res)
+        userService.isLoggedUser(header._token, header._id).then(res => {
+            if (!res.isLogged) {
                 reject({status: 401, message: "Please sign in before update profile", success: false});
+            } else {
+                user.findOneAndUpdate({nic: nic}, {$set: userData}, {upsert: false}, function (err, doc) {
+                    if (err)
+                        reject({status: 500, message: err, success: false});
+                    if (doc)
+                        resolve({status: 200, message: "successfully updated", success: true});
+                    else
+                        resolve({status: 200, message: "Cannot find entity", success: false})
+                })
+            }
         }).catch(err => {
             reject({status: 401, message: "Please sign in before update profile", success: false});
         });
-        user.findOneAndUpdate({nic: nic}, {$set: userData}, {upsert: false}, function (err, doc) {
-            if (err)
-                reject({status: 500, message: err, success: false});
-            if (doc)
-                resolve({status: 200, message: "successfully updated", success: true});
-            else
-                resolve({status: 200, message: "Cannot find entity", success: false})
-        })
     });
 };
 
@@ -205,7 +207,7 @@ userService.updateProfile = function (nic, data, header) {
  * validate logged user token
  * @returns {boolean}
  */
-async function isLoggedUser(token, id) {
+userService.isLoggedUser = async function (token, id) {
     const u = await new Promise((resolve, reject) => {
         user.findById(id, function (err, user) {
             if (err)
@@ -214,8 +216,12 @@ async function isLoggedUser(token, id) {
         });
     });
     if (u == null)
-        return false;
-    else return u._token._token === token;
+        return {isLogged: false, type: null};
+    else if (token === u._token._token) {
+        return {isLogged: true, type: u.role};
+    } else {
+        return {isLogged: false, type: null};
+    }
 }
 
 /**
@@ -225,28 +231,30 @@ async function isLoggedUser(token, id) {
  * @param header
  * @returns {Promise<any>}
  */
-userService.updatePassword = function (nic, password) {
+userService.updatePassword = function (nic, password, header) {
     return new Promise(function (resolve, reject) {
 
         //if user token invalid reject the request
-        isLoggedUser(header._token, header._id).then(res => {
-            if (!res)
+        userService.isLoggedUser(header._token, header._id).then(res => {
+            if (!res.isLogged)
                 reject({status: 401, message: "Please sign in before update password", success: false});
+            else {
+                bcrypt.hash(password, 12, (err, hash) => {
+                    var userData = {password: hash, updatedAt: moment()};
+
+                    //update password
+                    user.findOneAndUpdate({nic: nic}, {$set: userData}, {upsert: false}, function (err, doc) {
+                        if (err)
+                            reject({status: 500, message: err, success: false});
+                        if (doc)
+                            resolve({status: 200, message: "Password changed", success: true});
+                        else
+                            resolve({status: 200, message: "Cannot find user", success: false})
+                    });
+                });
+            }
         }).catch(err => {
             reject({status: 401, message: "Please sign in before update password", success: false});
-        });
-        bcrypt.hash(password, 12, (err, hash) => {
-            var userData = {password: hash, updatedAt: moment()};
-
-            //update password
-            user.findOneAndUpdate({nic: nic}, {$set: userData}, {upsert: false}, function (err, doc) {
-                if (err)
-                    reject({status: 500, message: err, success: false});
-                if (doc)
-                    resolve({status: 200, message: "Password changed", success: true});
-                else
-                    resolve({status: 200, message: "Cannot find user", success: false})
-            });
         });
     })
 };
