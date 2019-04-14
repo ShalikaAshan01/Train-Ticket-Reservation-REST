@@ -10,6 +10,9 @@ const userSchema = new Schema({
         type:String,
         required:true
     },
+    _token: {
+        type: Schema.Types.Mixed
+    },
     nic:{
         type:String,
         required:true

@@ -28,7 +28,6 @@ router.post('/signin',(req,res)=>{
 });
 //this post request will call the showProfile function in userService which handle user profile api request
 router.get('/:nic',(req,res)=>{
-  console.log(req.params.nic);
     userController.showProfle(req.params.nic)
         .then(data=>{
           res.status(data.status).send({success:data.success,user:data.user});
@@ -37,6 +36,29 @@ router.get('/:nic',(req,res)=>{
     });
 });
 router.put('/:nic/paymentmethod',(req,res)=>{
-  console.log(req.params.nic);
+    res.status(501).send({message: "Not Implemented"})
+});
+/**
+ * in this put method will update user information
+ */
+router.put('/:nic', (req, res) => {
+    userController.updateProfile(req.params.nic, req.body, req.headers)
+        .then(data => {
+            res.status(data.status).send({success: data.success, message: data.message})
+        }).catch(err => {
+        res.status(err.status).send({success: err.success, message: err.message})
+    });
+});
+/**
+ * this put method will change user password
+ *
+ */
+router.put('/:nic/changepassword', (req, res) => {
+    userController.updatePassword(req.params.nic, req.body.password)
+        .then(data => {
+            res.status(data.status).send({success: data.success, message: data.message});
+        }).catch(err => {
+        res.status(err.status).send({success: err.success, message: err.message})
+    });
 });
 module.exports = router;

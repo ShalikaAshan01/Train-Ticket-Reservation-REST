@@ -2,6 +2,8 @@
 const user = require('../Models/userModel');
 //require bcrypt for encrypt password and payment info
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const moment = require('moment');
 
 const userService = function () {
 };
@@ -45,6 +47,40 @@ userService.signup = function (data) {
             });
     })
 };
+
+/**
+ * this method will create new token value and update database
+ * @param id
+ */
+async function updateToken(id) {
+    //generate random token value
+    const buffer = await new Promise((resolve, reject) => {
+        crypto.randomBytes(256, function (ex, buffer) {
+            if (ex) {
+                reject("error generating token");
+            }
+            resolve(buffer);
+        });
+    });
+    const token = crypto
+        .createHash("sha1")
+        .update(buffer)
+        .digest("hex");
+
+    var tokenData = {
+        _token: token,
+        date: moment().format('D/M/YYYY, HH:mm:ss')
+    };
+    tokenData = {
+        _token: tokenData
+    };
+
+    //update database
+    var query = {'_id': id};
+    user.findOneAndUpdate(query, {$set: tokenData}, {upsert: false}, function (err, doc) {
+    });
+    return token;
+}
 /**
  * user signin with given credential
  * @param data
@@ -64,9 +100,14 @@ userService.signin = function (data){
                             email: user.email,
                             nic: user.nic,
                             telephoneNumber: user.telephoneNumber,
-                            type: user.type,
+                            role: user.role,
                         };
-                        resolve({status: 200,user:payload, message: "Successfully logged in", success: true})
+
+                        //change token
+                        updateToken(user._id).then(token => {
+                            payload._token = token;
+                            resolve({status: 200, user: payload, message: "Successfully logged in", success: true})
+                        });
                     }else{
                         resolve({status: 200,user:null, message: "Combination of NIC and Password doesn't match", success: false})
                     }
@@ -101,5 +142,112 @@ userService.showProfle = function(nic){
           reject({status:500,message: err })
        });
     });
+};
+/**
+ * this method will update user's payment information
+ * @param nic
+ * @param info
+ */
+// userService.updatePaymentInfo = function(nic,info,method){
+//     return new Promise(function (resolve, reject) {
+//         if(method==="cc"){
+//             var payinfo={
+//                 type:info.cardtype,
+//                 csv:csv,
+//                 number:cardnumber,
+//                 month:month,
+//                 year:year
+//             };
+//             user.findOneAndDelete({nic:nic},{$set:payinfo},{upsert:false},function (err,doc) {
+//
+//             });
+//         }else if(method ==="mobile"){
+//
+//         }else if(method==="remove"){
+//
+//         }
+//     });
+// };
+/**
+ * in this method will update user informations
+ * @param nic
+ * @param data
+ * @param header
+ */
+userService.updateProfile = function (nic, data, header) {
+    const userData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        telephoneNumber: data.telephoneNumber,
+        updatedAt: moment()
+    };
+    return new Promise(function (resolve, reject) {
+        //if user token invalid reject the request
+        isLoggedUser(header._token, header._id).then(res => {
+            if (!res)
+                reject({status: 401, message: "Please sign in before update profile", success: false});
+        }).catch(err => {
+            reject({status: 401, message: "Please sign in before update profile", success: false});
+        });
+        user.findOneAndUpdate({nic: nic}, {$set: userData}, {upsert: false}, function (err, doc) {
+            if (err)
+                reject({status: 500, message: err, success: false});
+            if (doc)
+                resolve({status: 200, message: "successfully updated", success: true});
+            else
+                resolve({status: 200, message: "Cannot find entity", success: false})
+        })
+    });
+};
+
+/**
+ * validate logged user token
+ * @returns {boolean}
+ */
+async function isLoggedUser(token, id) {
+    const u = await new Promise((resolve, reject) => {
+        user.findById(id, function (err, user) {
+            if (err)
+                reject(err);
+            resolve(user);
+        });
+    });
+    if (u == null)
+        return false;
+    else return u._token._token === token;
+}
+
+/**
+ * this method will change user password
+ * @param nic
+ * @param password
+ * @param header
+ * @returns {Promise<any>}
+ */
+userService.updatePassword = function (nic, password) {
+    return new Promise(function (resolve, reject) {
+
+        //if user token invalid reject the request
+        isLoggedUser(header._token, header._id).then(res => {
+            if (!res)
+                reject({status: 401, message: "Please sign in before update password", success: false});
+        }).catch(err => {
+            reject({status: 401, message: "Please sign in before update password", success: false});
+        });
+        bcrypt.hash(password, 12, (err, hash) => {
+            var userData = {password: hash, updatedAt: moment()};
+
+            //update password
+            user.findOneAndUpdate({nic: nic}, {$set: userData}, {upsert: false}, function (err, doc) {
+                if (err)
+                    reject({status: 500, message: err, success: false});
+                if (doc)
+                    resolve({status: 200, message: "Password changed", success: true});
+                else
+                    resolve({status: 200, message: "Cannot find user", success: false})
+            });
+        });
+    })
 };
 module.exports = userService;
