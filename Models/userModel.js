@@ -13,10 +13,6 @@ const userSchema = new Schema({
     _token: {
         type: Schema.Types.Mixed
     },
-    nic:{
-        type:String,
-        required:true
-    },
     telephoneNumber:{
         type:String,
         required:true

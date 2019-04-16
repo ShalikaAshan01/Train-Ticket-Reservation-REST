@@ -44,4 +44,64 @@ trainService.addNewTrain = function (data, header) {
         });
     })
 };
+trainService.updateTrainInfo = function (id, data, header) {
+    const userData = {
+        trainName: data.trainName,
+        frequency: data.frequency,
+        route: data.route,
+        type: data.type,
+        seats: data.seats,
+        updatedAt: moment()
+    };
+    return new Promise(function (resolve, reject) {
+        userService.isLoggedUser(header._token, header._id).then(res => {
+            //authenticate user
+            if (res.isLogged) {
+                //validate user type
+
+                if (res.type === "admin") {
+
+                    //save data
+                    train.findByIdAndUpdate(id, {$set: userData}, {new: true}, function (err, docs) {
+
+                    });
+                } else {
+                    reject({status: 403, message: "You cannot have permission to do this action", success: false});
+                }
+            } else {
+                reject({status: 401, message: "Please sign in before add new train", success: false});
+            }
+        }).catch(err => {
+            reject({status: 401, message: "Please sign in before add new train", success: false});
+        });
+    })
+};
+/**
+ * get all train informations
+ * @returns {Promise<any>}
+ */
+trainService.getTrains = function () {
+    return new Promise(function (resolve, reject) {
+        train.find({}, function (err, docs) {
+            if (err)
+                reject({status: 500, trains: null});
+            resolve({status: 200, trains: docs})
+        })
+    });
+};
+/**
+ * get train information by id
+ * @param id
+ * @returns {Promise<any>}
+ */
+trainService.getTrainByID = function (id) {
+    return new Promise(function (resolve, reject) {
+        train.find({_id: id}, function (err, docs) {
+            if (err)
+                reject({status: 500, trains: null});
+            resolve({status: 200, trains: docs})
+        })
+    });
+};
+
 module.exports = trainService;

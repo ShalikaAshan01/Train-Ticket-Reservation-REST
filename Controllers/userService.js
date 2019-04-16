@@ -13,21 +13,15 @@ userService.signup = function (data) {
         const userData = {
             firstName: data.firstName,
             lastName: data.lastName,
-            nic: data.nic,
             email: data.email,
             telephoneNumber: data.telephoneNumber
         };
-
-        //find user with given nic,in this method one nic can create only one account
-        user.findOne({
-            nic: data.nic
-        })
+        //find user by email
+        user.findOne({email: data.email})
             .then(res => {
-
-                //check if res if true or false if it's true it means already user account created under given nic
                 if (!res) {
                     //encrypt password
-                    bcrypt.hash(data.password,12,(err,hash)=>{
+                    bcrypt.hash(data.password, 12, (err, hash) => {
                         userData.password = hash;
                         //create new collection
                         user.create(userData)
@@ -39,18 +33,16 @@ userService.signup = function (data) {
                             });
                     });
                 } else {
-                    resolve({status: 200, message: "Someone already registered under this nic", success: false})
+                    resolve({status: 200, message: "Someone already registered under this email", success: false})
                 }
             })
-            .catch((err) => {
-                reject({status: 500, error: "Error: " + err})
-            });
     })
 };
 
 /**
  * this method will create new token value and update database
  * @param id
+ * @param token
  */
 async function updateToken(id) {
     //generate random token value
@@ -81,24 +73,24 @@ async function updateToken(id) {
     });
     return token;
 }
+
 /**
  * user signin with given credential
  * @param data
  */
-userService.signin = function (data){
+userService.signin = function (data) {
     return new Promise(function (resolve, reject) {
-        //find user by given nic
-        user.findOne({nic:data.nic})
-            .then((user)=>{
-                if(user){
+        //find user by given email
+        user.findOne({email: data.email})
+            .then((user) => {
+                if (user) {
                     //compare encrypted passwords
-                    if(bcrypt.compareSync(data.password,user.password)){
+                    if (bcrypt.compareSync(data.password, user.password)) {
                         const payload = {
                             _id: user._id,
                             firstName: user.firstName,
                             lastName: user.lastName,
                             email: user.email,
-                            nic: user.nic,
                             telephoneNumber: user.telephoneNumber,
                             role: user.role,
                         };
@@ -108,44 +100,53 @@ userService.signin = function (data){
                             payload._token = token;
                             resolve({status: 200, user: payload, message: "Successfully logged in", success: true})
                         });
-                    }else{
-                        resolve({status: 200,user:null, message: "Combination of NIC and Password doesn't match", success: false})
+                    } else {
+                        resolve({
+                            status: 200,
+                            user: null,
+                            message: "Combination of email address and Password doesn't match",
+                            success: false
+                        })
                     }
-                }else{
-                    resolve({status: 200, message: "Combination of NIC and Password doesn't match", success: false})
+                } else {
+                    resolve({
+                        status: 200,
+                        message: "Combination of Email Address and Password doesn't match",
+                        success: false
+                    })
                 }
             })
             .catch((err) => {
                 reject({status: 500, error: "Error: " + err})
-        });
+            });
     });
 };
 /**
  * this method will return user information
  * @param id
  */
-userService.showProfle = function(nic){
+userService.showProfle = function (id) {
     return new Promise(function (resolve, reject) {
-        //find user by given nic
-       user.findOne({nic:nic}).then((user)=>{
-           if(user){
-               //if user found with given nic
-               user = JSON.parse(JSON.stringify(user));
-               //remove unwanted elements from user object
-               delete user.password;
-               delete user.__v;
-               resolve({status:200,success:true,user:user})
-           }else{
-               resolve({status:404,success:false,user:user})
-           }
-       }).catch(err=>{
-          reject({status:500,message: err })
-       });
+        //find user by given id
+        user.findOne({_id: id}).then((user) => {
+            if (user) {
+                //if user found with given id
+                user = JSON.parse(JSON.stringify(user));
+                //remove unwanted elements from user object
+                delete user.password;
+                delete user.__v;
+                resolve({status: 200, success: true, user: user})
+            } else {
+                resolve({status: 404, success: false, user: user})
+            }
+        }).catch(err => {
+            reject({status: 500, message: err})
+        });
     });
 };
 /**
  * this method will update user's payment information
- * @param nic
+ * @param id
  * @param info
  */
 // userService.updatePaymentInfo = function(nic,info,method){
@@ -170,11 +171,11 @@ userService.showProfle = function(nic){
 // };
 /**
  * in this method will update user informations
- * @param nic
+ * @param id
  * @param data
  * @param header
  */
-userService.updateProfile = function (nic, data, header) {
+userService.updateProfile = function (id, data, header) {
     const userData = {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -188,7 +189,7 @@ userService.updateProfile = function (nic, data, header) {
             if (!res.isLogged) {
                 reject({status: 401, message: "Please sign in before update profile", success: false});
             } else {
-                user.findOneAndUpdate({nic: nic}, {$set: userData}, {upsert: false}, function (err, doc) {
+                user.findOneAndUpdate({_id: id}, {$set: userData}, {upsert: false}, function (err, doc) {
                     if (err)
                         reject({status: 500, message: err, success: false});
                     if (doc)
@@ -226,12 +227,12 @@ userService.isLoggedUser = async function (token, id) {
 
 /**
  * this method will change user password
- * @param nic
+ * @param id
  * @param password
  * @param header
  * @returns {Promise<any>}
  */
-userService.updatePassword = function (nic, password, header) {
+userService.updatePassword = function (id, password, header) {
     return new Promise(function (resolve, reject) {
 
         //if user token invalid reject the request
@@ -243,7 +244,7 @@ userService.updatePassword = function (nic, password, header) {
                     var userData = {password: hash, updatedAt: moment()};
 
                     //update password
-                    user.findOneAndUpdate({nic: nic}, {$set: userData}, {upsert: false}, function (err, doc) {
+                    user.findOneAndUpdate({_id: id}, {$set: userData}, {upsert: false}, function (err, doc) {
                         if (err)
                             reject({status: 500, message: err, success: false});
                         if (doc)
@@ -256,6 +257,23 @@ userService.updatePassword = function (nic, password, header) {
         }).catch(err => {
             reject({status: 401, message: "Please sign in before update password", success: false});
         });
-    })
+    });
 };
+
+userService.validateUser = function (id, token) {
+    return new Promise(function (resolve, reject) {
+        user.findOne({_id: id}).then(res => {
+            if (res) {
+                if (token === res._token._token)
+                    resolve({status: 200, success: true});
+                else
+                    resolve({status: 400, success: false});
+            } else
+                resolve({status: 400, success: false});
+        }).catch(err => {
+            reject({status: 500, success: false})
+        });
+    });
+};
+
 module.exports = userService;

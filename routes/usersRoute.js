@@ -8,6 +8,7 @@ router.get('/', function(req, res, next) {
 });
 //this post request will call the signup function in userService
 router.post('/signup', (req, res) => {
+    if (!req.body) res.status(400);
   userController.signup(req.body)
       .then(function(data){
         res.status(data.status).send({message: data.message,success:data.success});
@@ -20,15 +21,20 @@ router.post('/signup', (req, res) => {
 router.post('/signin',(req,res)=>{
   userController.signin(req.body)
       .then(function (data) {
-        res.status(data.status).send({user:data.user,message: data.message,success:data.success});
+          res.status(data.status).send({
+              user: data.user,
+              token: data.token,
+              message: data.message,
+              success: data.success
+          });
       })
       .catch(err=>{
         res.status(err.status).send({message: err.message});
       });
 });
 //this post request will call the showProfile function in userService which handle user profile api request
-router.get('/:nic',(req,res)=>{
-    userController.showProfle(req.params.nic)
+router.get('/:id', (req, res) => {
+    userController.showProfle(req.params.id)
         .then(data=>{
           res.status(data.status).send({success:data.success,user:data.user});
         }).catch(err=>{
@@ -41,8 +47,8 @@ router.put('/:nic/paymentmethod',(req,res)=>{
 /**
  * in this put method will update user information
  */
-router.patch('/:nic', (req, res) => {
-    userController.updateProfile(req.params.nic, req.body, req.headers)
+router.patch('/:id', (req, res) => {
+    userController.updateProfile(req.params.id, req.body, req.headers)
         .then(data => {
             res.status(data.status).send({success: data.success, message: data.message})
         }).catch(err => {
@@ -53,12 +59,21 @@ router.patch('/:nic', (req, res) => {
  * this put method will change user password
  *
  */
-router.put('/:nic/changepassword', (req, res) => {
-    userController.updatePassword(req.params.nic, req.body.password, req.headers)
+router.put('/:id/changepassword', (req, res) => {
+    userController.updatePassword(req.params.id, req.body.password, req.headers)
         .then(data => {
             res.status(data.status).send({success: data.success, message: data.message});
         }).catch(err => {
         res.status(err.status).send({success: err.success, message: err.message})
     });
+});
+
+router.post('/:id/:token', (req, res) => {
+    userController.validateUser(req.params.id, req.params.token)
+        .then(data => {
+            res.status(data.status).send({success: data.success})
+        }).catch(err => {
+        res.status(err.status).send({success: err.success})
+    })
 });
 module.exports = router;
