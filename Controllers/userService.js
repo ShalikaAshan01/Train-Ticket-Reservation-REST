@@ -35,7 +35,9 @@ userService.signup = function (data) {
                 } else {
                     resolve({status: 200, message: "Someone already registered under this email", success: false})
                 }
-            })
+            }).catch(err => {
+            reject({status: 500, message: err, success: false});
+        });
     })
 };
 
@@ -260,6 +262,12 @@ userService.updatePassword = function (id, password, header) {
     });
 };
 
+/**
+ * in this method will walidate user token and id
+ * @param id
+ * @param token
+ * @returns {Promise<any>}
+ */
 userService.validateUser = function (id, token) {
     return new Promise(function (resolve, reject) {
         user.findOne({_id: id}).then(res => {

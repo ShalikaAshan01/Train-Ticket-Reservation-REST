@@ -1,28 +1,22 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const trainSchema = new Schema({
-    trainName: {
-        type: String,
-        required: true
-    },
-    frequency: {
-        type: Schema.Types.Mixed,
-        required: true
-    },
-    route: {
-        type: Schema.Types.Mixed,
-        required: true
-    },
+//station is a json object
+//ex:{{station:yyy,status:closed},{station:xxx,status:active}}
+const lineSchema = new Schema({
     line: {
         type: String,
         required: true
     },
-    type: {
+    from: {
         type: String,
         required: true
     },
-    seats: {
+    to: {
+        type: String,
+        required: true
+    },
+    stations: {
         type: Schema.Types.Mixed,
         required: true
     },
@@ -34,5 +28,5 @@ const trainSchema = new Schema({
         type: Date
     }
 });
-var train = mongoose.model("train", trainSchema);
-module.exports = train;
+var line = mongoose.model("line", lineSchema);
+module.exports = line;

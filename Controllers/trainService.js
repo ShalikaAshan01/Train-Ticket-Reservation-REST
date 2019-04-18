@@ -15,6 +15,7 @@ trainService.addNewTrain = function (data, header) {
         trainName: data.trainName,
         frequency: data.frequency,
         route: data.route,
+        line: data.line,
         type: data.type,
         seats: data.seats
     };
@@ -26,13 +27,22 @@ trainService.addNewTrain = function (data, header) {
 
                 if (res.type === "admin") {
 
-                    //save data
-                    train.create(userData)
-                        .then(() => {
-                            resolve({status: 200, message: "New train was added successfully", success: true})
-                        }).catch(err => {
+                    //check if the train was added with name
+                    train.find({trainName: data.trainName}).then(res => {
+                        if (!res) {
+                            //save data
+                            train.create(userData)
+                                .then(() => {
+                                    resolve({status: 200, message: "New train was added successfully", success: true})
+                                }).catch(err => {
+                                reject({status: 500, message: err, success: false});
+                            });
+                        } else
+                            resolve({status: 200, message: "This train is already added", success: false})
+                    }).catch(err => {
                         reject({status: 500, message: err, success: false});
-                    });
+                    })
+
                 } else {
                     reject({status: 403, message: "You cannot have permission to do this action", success: false});
                 }
@@ -44,12 +54,20 @@ trainService.addNewTrain = function (data, header) {
         });
     })
 };
+/**
+ * thhis method will update traininfo which is found by its id
+ * @param id
+ * @param data
+ * @param header
+ * @returns {Promise<any>}
+ */
 trainService.updateTrainInfo = function (id, data, header) {
     const userData = {
         trainName: data.trainName,
         frequency: data.frequency,
         route: data.route,
         type: data.type,
+        line: data.line,
         seats: data.seats,
         updatedAt: moment()
     };
@@ -63,7 +81,9 @@ trainService.updateTrainInfo = function (id, data, header) {
 
                     //save data
                     train.findByIdAndUpdate(id, {$set: userData}, {new: true}, function (err, docs) {
-
+                        if (err)
+                            reject({status: 403, message: "This train is not available", success: false});
+                        resolve({status: 200, message: "Successfully updated", success: true});
                     });
                 } else {
                     reject({status: 403, message: "You cannot have permission to do this action", success: false});
