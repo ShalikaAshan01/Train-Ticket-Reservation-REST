@@ -20,6 +20,9 @@ const lineSchema = new Schema({
         type: Schema.Types.Mixed,
         required: true
     },
+    closedStations: {
+        type: Schema.Types.Mixed,
+    },
     createdAt: {
         type: Date,
         default: Date.now()

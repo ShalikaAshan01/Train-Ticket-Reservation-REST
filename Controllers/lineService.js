@@ -32,7 +32,7 @@ lineService.addRoute = function (data, header) {
                         .then(res => {
                             if (!res) {
                                 route.create(userData).then(() => {
-                                    resolve({status: 200, success: true, message: "Successfully Created"})
+                                    resolve({status: 200, success: true, message: "Successfully added new Route"})
                                 }).catch(err => {
                                     reject({status: 200, success: false, message: err})
                                 })

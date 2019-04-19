@@ -273,13 +273,13 @@ userService.validateUser = function (id, token) {
         user.findOne({_id: id}).then(res => {
             if (res) {
                 if (token === res._token._token)
-                    resolve({status: 200, success: true});
+                    resolve({status: 200, success: true, role: res.role});
                 else
-                    resolve({status: 400, success: false});
+                    resolve({status: 400, success: false, role: null});
             } else
-                resolve({status: 400, success: false});
+                resolve({status: 400, success: false, role: null});
         }).catch(err => {
-            reject({status: 500, success: false})
+            reject({status: 500, success: false, role: null})
         });
     });
 };

@@ -71,9 +71,9 @@ router.put('/:id/changepassword', (req, res) => {
 router.post('/:id/:token', (req, res) => {
     userController.validateUser(req.params.id, req.params.token)
         .then(data => {
-            res.status(data.status).send({success: data.success})
+            res.status(data.status).send({success: data.success, role: data.role})
         }).catch(err => {
-        res.status(err.status).send({success: err.success})
+        res.status(err.status).send({success: err.success, role: err.role})
     })
 });
 module.exports = router;
