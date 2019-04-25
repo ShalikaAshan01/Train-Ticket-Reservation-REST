@@ -10,7 +10,15 @@ const trainSchema = new Schema({
         type: Schema.Types.Mixed,
         required: true
     },
-    route: {
+    from: {
+        type: String,
+        required: true
+    },
+    to: {
+        type: String,
+        required: true
+    },
+    stations: {
         type: Schema.Types.Mixed,
         required: true
     },

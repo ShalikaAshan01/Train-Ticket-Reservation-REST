@@ -24,10 +24,10 @@ router.get('/', (req, res) => {
     });
 });
 /**
- * this get request show all lines
+ * this get request show lines by id
  */
-router.get('/:line', (req, res) => {
-    lineService.getInfoByLine(req.params.line).then(data => {
+router.get('/:id', (req, res) => {
+    lineService.getInfoByID(req.params.id).then(data => {
         res.status(data.status).send({success: data.success, line: data.line});
     }).catch(err => {
         res.status(err.status).send({success: err.success, line: err.line});

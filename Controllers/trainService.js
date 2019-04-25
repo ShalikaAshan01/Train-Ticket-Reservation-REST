@@ -14,7 +14,9 @@ trainService.addNewTrain = function (data, header) {
     const userData = {
         trainName: data.trainName,
         frequency: data.frequency,
-        route: data.route,
+        stations: data.stations,
+        from: data.from,
+        to: data.to,
         line: data.line,
         type: data.type,
         seats: data.seats
@@ -30,7 +32,7 @@ trainService.addNewTrain = function (data, header) {
                     //check if the train was added with name
                     train.find({trainName: data.trainName}).then(res => {
                         if (!res) {
-                            //save data
+                            // save data
                             train.create(userData)
                                 .then(() => {
                                     resolve({status: 200, message: "New train was added successfully", success: true})
@@ -65,9 +67,11 @@ trainService.updateTrainInfo = function (id, data, header) {
     const userData = {
         trainName: data.trainName,
         frequency: data.frequency,
-        route: data.route,
-        type: data.type,
+        stations: data.stations,
+        from: data.from,
+        to: data.to,
         line: data.line,
+        type: data.type,
         seats: data.seats,
         updatedAt: moment()
     };
@@ -122,6 +126,27 @@ trainService.getTrainByID = function (id) {
             resolve({status: 200, trains: docs})
         })
     });
+};
+
+/**
+ * in this method will find train information and return it
+ * @param data is departure,arrival,seats,time,class,date,day
+ * @returns {Promise<any>}
+ */
+trainService.checkAvailability = function (data) {
+    return new Promise(function (resolve, reject) {
+        let query = {
+            frequency: data.day,
+            "stations.station": data.departure,
+            "stations.station": data.arrival
+
+        };
+        train.find(query, function (err, docs) {
+            if (err)
+                reject({status: 500, trains: null});
+            resolve({status: 200, trains: docs})
+        })
+    })
 };
 
 module.exports = trainService;

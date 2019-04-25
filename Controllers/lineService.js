@@ -27,22 +27,11 @@ lineService.addRoute = function (data, header) {
 
                 if (res.type === "admin") {
 
-                    //check if the line was added with given name
-                    route.findOne({line: data.line})
-                        .then(res => {
-                            if (!res) {
                                 route.create(userData).then(() => {
                                     resolve({status: 200, success: true, message: "Successfully added new Route"})
                                 }).catch(err => {
                                     reject({status: 200, success: false, message: err})
                                 })
-                            } else {
-                                resolve({status: 200, success: true, message: "This line is already added"})
-                            }
-                        }).catch(err => {
-                        reject({status: 500, success: false, message: err});
-                    })
-
                 } else {
                     reject({status: 403, message: "You cannot have permission to do this action", success: false});
                 }
@@ -75,10 +64,10 @@ lineService.getAll = function () {
  * @param line
  * @returns {Promise<any>}
  */
-lineService.getInfoByLine = function (line) {
+lineService.getInfoByID = function (id) {
     return new Promise(function (resolve, reject) {
-        route.find({line: line}).then(res => {
-            if (res)
+        route.find({_id: id}).then(res => {
+            if (res.length !== 0)
                 resolve({status: 200, success: true, line: res});
             else
                 resolve({status: 200, success: false, line: res})
@@ -159,10 +148,10 @@ lineService.deleteLine = function (id, header) {
                     reject({status: 403, message: "You cannot have permission to do this action", success: false});
                 }
             } else {
-                reject({status: 401, message: "Please sign in before add new Line", success: false});
+                reject({status: 401, message: "Please sign in before delete new resources", success: false});
             }
         }).catch(err => {
-            reject({status: 401, message: "Please sign in before add new Line", success: false});
+            reject({status: 401, message: "Please sign in before delete resources", success: false});
         });
     });
 };

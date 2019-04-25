@@ -45,4 +45,12 @@ router.get('/:id', (req, res) => {
     })
 });
 
+router.get('/check/availability', ((req, res) => {
+    trainController.checkAvailability(req.body).then(data => {
+        res.status(data.status).send({trains: data.trains})
+    }).catch(err => {
+        res.status(err.status).send({trains: err.trains})
+    })
+}));
+
 module.exports = router;
