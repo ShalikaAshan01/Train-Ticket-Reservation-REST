@@ -31,12 +31,12 @@ scheduleFunctions.createSchedule = function (data) {
                 reject({status: 500, message: err});
             else if (docs.length <= 0) {
                 schedule.create(values)
-                    .then(() => resolve({status: 200, message: "New Schedule Added", success: true}))
+                    .then(() => resolve({status: 200, message: "New Schedule Added", data: data, success: true}))
                     .catch(err => {
                         reject({status: 500, message: err, success: false})
                     })
             } else {
-                resolve({status: 200, message: "Already Created", success: false})
+                resolve({status: 200, message: "Already Created", data: docs, success: false})
             }
         })
     });
