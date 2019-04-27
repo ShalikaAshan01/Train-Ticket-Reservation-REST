@@ -13,17 +13,29 @@ const scheduleSchema = new Schema({
         required: true,
     },
     scheduleDate: {
-        type: Date,
+        type: String,
         required: true
     },
     route: {
         from: {
-            type: String,
-            required: true
+            station: {
+                type: String,
+                required: true
+            },
+            time: {
+                type: String,
+                required: true
+            }
         },
         to: {
-            type: String,
-            required: true
+            station: {
+                type: String,
+                required: true
+            },
+            time: {
+                type: String,
+                required: true
+            }
         }
     },
     availableSeats: {

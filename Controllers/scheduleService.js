@@ -4,11 +4,16 @@ const userService = require('../Controllers/userService');
 
 const scheduleFunctions = {};
 
+/**
+ * this method will create brand new schedule
+ * @param data
+ * @returns {Promise<any>}
+ */
 scheduleFunctions.createSchedule = function (data) {
     const values = {
         trainID: data.trainID,
         trainName: data.trainName,
-        scheduleDate: data.date,
+        scheduleDate: moment(new Date(data.date)).format('MM/DD/YYYY'),
         route: {
             from: data.from,
             to: data.to
@@ -36,10 +41,29 @@ scheduleFunctions.createSchedule = function (data) {
                         reject({status: 500, message: err, success: false})
                     })
             } else {
-                resolve({status: 200, message: "Already Created", data: docs, success: false})
+                resolve({status: 200, message: "Already Created", data: docs[0], success: false})
             }
         })
     });
+};
+/**
+ * this method will send specific schedule
+ * @param data
+ * @returns {Promise<any>}
+ */
+scheduleFunctions.showScheduleByDateAndTID = function (data) {
+    return new Promise(function (resolve, reject) {
+        let query = {
+            trainID: data._tid,
+            scheduleDate: moment(new Date(data.scheduleDate)).format('MM/DD/YYYY')
+        };
+
+        schedule.findOne(query, function (err, docs) {
+            if (err)
+                reject({status: 500, message: err, success: false, schedule: null});
+            resolve({status: 200, message: "success", success: true, schedule: docs})
+        })
+    })
 };
 
 // userService.isLoggedUser(header._token, header._id).then(res => {
