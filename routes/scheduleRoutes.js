@@ -2,7 +2,9 @@ var express = require('express');
 var router = express.Router();
 var scheduleService = require('../Controllers/scheduleService');
 
-
+/**
+ * this post method will create new schedule
+ */
 router.post('/', (req, res) => {
     scheduleService.createSchedule(req.body)
         .then(data => {
@@ -12,6 +14,9 @@ router.post('/', (req, res) => {
     })
 });
 
+/**
+ * this get method will return schedule information by schedule date and Train id
+ */
 router.get('/:scheduleDate/:_tid', (req, res) => {
     scheduleService.showScheduleByDateAndTID(req.params)
         .then(data => {
