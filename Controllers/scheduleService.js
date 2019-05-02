@@ -67,6 +67,14 @@ scheduleFunctions.showScheduleByDateAndTID = function (data) {
     })
 };
 
+/**
+ * this method will update schedule model with given reservation information
+ * @param date
+ * @param id
+ * @param data
+ * @param header
+ * @returns {Promise<any>}
+ */
 scheduleFunctions.makeReservation = function (date, id, data, header) {
     date = moment(new Date(date)).format("MM/DD/YYYY");
 
@@ -131,7 +139,15 @@ scheduleFunctions.makeReservation = function (date, id, data, header) {
     });
 };
 
-
+scheduleFunctions.getReservationByID = function (id) {
+    return new Promise(function (resolve, reject) {
+        schedule.find({"reservation.userID": id}).then(data => {
+            resolve({status: 200, reservation: data, message: null})
+        }).catch(err => {
+            reject({status: 500, reservation: null, message: err})
+        })
+    })
+};
 
 
 
