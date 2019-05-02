@@ -45,6 +45,9 @@ router.get('/:id', (req, res) => {
     })
 });
 
+/**
+ * this method will return train availability
+ */
 router.get('/check/availability', ((req, res) => {
     trainController.checkAvailability(req.query).then(data => {
         res.status(data.status).send({trains: data.trains})

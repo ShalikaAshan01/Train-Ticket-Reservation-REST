@@ -14,9 +14,9 @@ pricingService.add = function (data) {
     let values = {
         price: {
             type: data.type,
-            clasaA: data.ClassA,
-            clasaB: data.ClassB,
-            clasaC: data.ClassC
+            classA: data.ClassA,
+            classB: data.ClassB,
+            classC: data.ClassC
         }
     };
 

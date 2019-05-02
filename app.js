@@ -12,6 +12,7 @@ var trainRouter = require('./routes/trainRoutes');
 var lineRouter = require('./routes/lineRoutes');
 var scheduleRouter = require('./routes/scheduleRoutes');
 var pricingRouter = require('./routes/pricingRoutes');
+var mailer = require('./routes/mailer');
 
 var app = express();
 
@@ -53,6 +54,7 @@ app.use('/trains', trainRouter);
 app.use('/line', lineRouter);
 app.use('/schedules', scheduleRouter);
 app.use('/pricing', pricingRouter);
+app.use('/mail', mailer);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

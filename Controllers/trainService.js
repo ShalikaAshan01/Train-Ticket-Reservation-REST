@@ -133,6 +133,7 @@ trainService.getTrainByID = function (id) {
  * @param data is departure,arrival,seats,time,class,date,day
  * @returns {Promise<any>}
  */
+
 trainService.checkAvailability = function (data) {
     return new Promise(function (resolve, reject) {
         let query = {

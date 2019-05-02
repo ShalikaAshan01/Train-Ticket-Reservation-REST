@@ -1,6 +1,7 @@
 const schedule = require('../Models/scheduleModel');
 const moment = require('moment');
 const userService = require('../Controllers/userService');
+const mongoose = require('mongoose');
 
 const scheduleFunctions = {};
 
@@ -60,22 +61,78 @@ scheduleFunctions.showScheduleByDateAndTID = function (data) {
 
         schedule.findOne(query, function (err, docs) {
             if (err)
-                reject({status: 500, message: err, success: false, schedule: null});
+                reject({status: 404, message: err, success: false, schedule: null});
             resolve({status: 200, message: "success", success: true, schedule: docs})
         })
     })
 };
 
-// userService.isLoggedUser(header._token, header._id).then(res => {
-//     //authenticate user
-//     if (res.isLogged) {
-//
-//
-//     } else {
-//         reject({status: 401, message: "Please sign in before add new train", success: false});
-//     }
-// }).catch(err => {
-//     reject({status: 401, message: "Please sign in before add new train", success: false});
-// });
+scheduleFunctions.makeReservation = function (date, id, data, header) {
+    date = moment(new Date(date)).format("MM/DD/YYYY");
+
+    return new Promise(function (resolve, reject) {
+        userService.isLoggedUser(header._token, header._id).then(res => {
+            //authenticate user
+            if (res.isLogged) {
+
+                let values = {
+                    _id: new mongoose.mongo.ObjectId(),
+                    userID: data.userID,
+                    seats: {
+                        class: data.class,
+                        noSeats: data.seats
+                    },
+                    payment: {
+                        type: data.type,
+                        discount: data.discount,
+                        total: data.total
+                    },
+                    route: {
+                        from: data.departure,
+                        to: data.arrival
+                    },
+                    date: date
+                };
+
+                let query = {
+                    trainID: id,
+                    scheduleDate: date,
+                };
+
+                schedule.find(query).then(val => {
+                    let availableSeats = val[0].availableSeats[data.class] - data.seats;
+
+                    let obj = {};
+                    let seatsString = "availableSeats." + data.class;
+
+                    obj[seatsString] = availableSeats;
+
+
+                    schedule.findOneAndUpdate(query, obj, {'new': false}, (err, info) => {
+                    });
+
+                    schedule.findOneAndUpdate(query, {"$push": {"reservation": values}}, {'new': false}, (err, info) => {
+                        if (err)
+                            reject({status: 500, message: "Something went wrong", success: false});
+                        else
+                            reject({status: 200, message: "Successfully Reserved", success: true});
+                    })
+                }).catch(err => {
+                    reject({status: 500, message: "Something went wrong", success: false});
+                })
+
+
+            } else {
+                reject({status: 401, message: "Please sign in before make reservation", success: false});
+            }
+        }).catch(err => {
+            reject({status: 401, message: "Please sign in before make reservation", success: false});
+        });
+    });
+};
+
+
+
+
 
 module.exports = scheduleFunctions;

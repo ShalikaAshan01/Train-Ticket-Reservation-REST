@@ -67,6 +67,7 @@ const scheduleSchema = new Schema({
         },
         payment: {
             type: {type: String, required: true},
+            discount: {type: Number, required: true},
             total: {type: Types.Decimal128, required: true}
         },
         date: {type: Date, required: true},

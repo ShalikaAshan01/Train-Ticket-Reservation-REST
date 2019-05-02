@@ -26,4 +26,13 @@ router.get('/:scheduleDate/:_tid', (req, res) => {
     })
 });
 
+router.put('/:id/:date', (req, res) => {
+    scheduleService.makeReservation(req.params.date, req.params.id, req.body, req.headers)
+        .then(data => {
+            res.status(data.status).send({message: data.message, success: data.success})
+        }).catch(err => {
+        res.status(err.status).send({message: err.message, success: err.success})
+    })
+});
+
 module.exports = router;
