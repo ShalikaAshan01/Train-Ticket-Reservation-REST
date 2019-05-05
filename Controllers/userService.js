@@ -273,7 +273,7 @@ userService.isLoggedUser = async function (token, id) {
     } else {
         return {isLogged: false, type: null};
     }
-}
+};
 
 /**
  * this method will change user password

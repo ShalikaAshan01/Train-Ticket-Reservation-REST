@@ -27,11 +27,11 @@ lineService.addRoute = function (data, header) {
 
                 if (res.type === "admin") {
 
-                                route.create(userData).then(() => {
-                                    resolve({status: 200, success: true, message: "Successfully added new Route"})
-                                }).catch(err => {
-                                    reject({status: 200, success: false, message: err})
-                                })
+                    route.create(userData).then(() => {
+                        resolve({status: 200, success: true, message: "Successfully added new Route"})
+                    }).catch(err => {
+                        reject({status: 200, success: false, message: err})
+                    })
                 } else {
                     reject({status: 403, message: "You cannot have permission to do this action", success: false});
                 }

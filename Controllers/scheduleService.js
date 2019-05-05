@@ -102,8 +102,8 @@ scheduleFunctions.makeReservation = function (date, id, data, header) {
                     },
                     date: now
                 };
-                console.log(now)
-                console.log(date)
+                console.log(now);
+                console.log(date);
 
                 let query = {
                     trainID: id,
@@ -155,7 +155,6 @@ scheduleFunctions.getReservationByID = function (id) {
         })
     })
 };
-
 
 
 module.exports = scheduleFunctions;
