@@ -34,12 +34,12 @@ scheduleFunctions.createSchedule = function (data) {
         };
         schedule.find(query, function (err, docs) {
             if (err)
-                reject({status: 500, message: err});
+                reject({status: 500, message: "Error: " + err});
             else if (docs.length <= 0) {
                 schedule.create(values)
                     .then(() => resolve({status: 200, message: "New Schedule Added", data: data, success: true}))
                     .catch(err => {
-                        reject({status: 500, message: err, success: false})
+                        reject({status: 500, message: "Error: " + err, success: false})
                     })
             } else {
                 resolve({status: 200, message: "Already Created", data: docs[0], success: false})
@@ -61,7 +61,7 @@ scheduleFunctions.showScheduleByDateAndTID = function (data) {
 
         schedule.findOne(query, function (err, docs) {
             if (err)
-                reject({status: 404, message: err, success: false, schedule: null});
+                reject({status: 404, message: "Error: " + err, success: false, schedule: null});
             resolve({status: 200, message: "success", success: true, schedule: docs})
         })
     })
@@ -83,6 +83,7 @@ scheduleFunctions.makeReservation = function (date, id, data, header) {
             //authenticate user
             if (res.isLogged) {
 
+                let now = moment().format('MMMM Do YYYY, h:mm:ss a').toString();
                 let values = {
                     _id: new mongoose.mongo.ObjectId(),
                     userID: data.userID,
@@ -99,8 +100,10 @@ scheduleFunctions.makeReservation = function (date, id, data, header) {
                         from: data.departure,
                         to: data.arrival
                     },
-                    date: moment().format('MMMM Do YYYY, h:mm:ss a')
+                    date: now
                 };
+                console.log(now)
+                console.log(date)
 
                 let query = {
                     trainID: id,
@@ -120,10 +123,10 @@ scheduleFunctions.makeReservation = function (date, id, data, header) {
                     });
 
                     schedule.findOneAndUpdate(query, {"$push": {"reservation": values}}, {'new': false}, (err, info) => {
-                        if (err)
+                        if (err) {
                             reject({status: 500, message: "Something went wrong", success: false});
-                        else
-                            reject({status: 200, message: "Successfully Reserved", success: true});
+                        } else
+                            resolve({status: 200, message: "Successfully Reserved", success: true});
                     })
                 }).catch(err => {
                     reject({status: 500, message: "Something went wrong", success: false});
@@ -148,7 +151,7 @@ scheduleFunctions.getReservationByID = function (id) {
         schedule.find({"reservation.userID": id}).then(data => {
             resolve({status: 200, reservation: data, message: null})
         }).catch(err => {
-            reject({status: 500, reservation: null, message: err})
+            reject({status: 500, reservation: null, message: "Error: " + err})
         })
     })
 };

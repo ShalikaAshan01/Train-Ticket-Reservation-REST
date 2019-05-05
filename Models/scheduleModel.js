@@ -70,7 +70,7 @@ const scheduleSchema = new Schema({
             discount: {type: Number, required: true},
             total: {type: Types.Decimal128, required: true}
         },
-        date: {type: Date, required: true},
+        date: {type: String, required: true},
         route: {
             from: {type: String, required: true},
             to: {type: String, required: true}

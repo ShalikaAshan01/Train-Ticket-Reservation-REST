@@ -50,7 +50,8 @@ router.put('/:nic/paymentmethod',(req,res)=>{
 router.patch('/:id', (req, res) => {
     userController.updateProfile(req.params.id, req.body, req.headers)
         .then(data => {
-            res.status(data.status).send({success: data.success, message: data.message})
+            res.status(data.status).send({success: data.success, message: data.message, user: data.user}
+            )
         }).catch(err => {
         res.status(err.status).send({success: err.success, message: err.message})
     });
@@ -60,7 +61,7 @@ router.patch('/:id', (req, res) => {
  *
  */
 router.put('/:id/changepassword', (req, res) => {
-    userController.updatePassword(req.params.id, req.body.password, req.headers)
+    userController.updatePassword(req.params.id, req.body, req.headers)
         .then(data => {
             res.status(data.status).send({success: data.success, message: data.message});
         }).catch(err => {

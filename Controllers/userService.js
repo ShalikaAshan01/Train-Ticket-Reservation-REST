@@ -36,7 +36,7 @@ userService.signup = function (data) {
                     resolve({status: 200, message: "Someone already registered under this email", success: false})
                 }
             }).catch(err => {
-            reject({status: 500, message: err, success: false});
+            reject({status: 500, message: "Error " + err, success: false});
         });
     })
 };
@@ -142,7 +142,7 @@ userService.showProfle = function (id) {
                 resolve({status: 404, success: false, user: user})
             }
         }).catch(err => {
-            reject({status: 500, message: err})
+            reject({status: 500, message: "Error: " + err})
         });
     });
 };
@@ -191,14 +191,62 @@ userService.updateProfile = function (id, data, header) {
             if (!res.isLogged) {
                 reject({status: 401, message: "Please sign in before update profile", success: false});
             } else {
-                user.findOneAndUpdate({_id: id}, {$set: userData}, {upsert: false}, function (err, doc) {
-                    if (err)
-                        reject({status: 500, message: err, success: false});
-                    if (doc)
-                        resolve({status: 200, message: "successfully updated", success: true});
-                    else
-                        resolve({status: 200, message: "Cannot find entity", success: false})
+
+                user.find({email: data.email}).then(data => {
+                    if (data.length === 0) {
+                        user.findOneAndUpdate({_id: id}, {$set: userData}, {upsert: false}, function (err, user) {
+                            if (err)
+                                reject({status: 500, message: "Error: " + err, success: false});
+                            if (user) {
+
+                                const payload = {
+                                    _id: user._id,
+                                    firstName: user.firstName,
+                                    lastName: user.lastName,
+                                    email: user.email,
+                                    telephoneNumber: user.telephoneNumber,
+                                    role: user.role,
+                                    _token: user._token._token
+                                };
+
+                                resolve({status: 200, message: "successfully updated", success: true, user: payload});
+                            } else
+                                resolve({status: 404, message: "Cannot find entity", success: false})
+                        })
+                    } else {
+                        let resID = data[0]._id;
+                        if (resID == id) {
+                            user.findOneAndUpdate({_id: id}, {$set: userData}, {upsert: false}, function (err, user) {
+                                if (err)
+                                    reject({status: 500, message: "Error: " + err, success: false});
+                                if (user) {
+                                    const payload = {
+                                        _id: user._id,
+                                        firstName: user.firstName,
+                                        lastName: user.lastName,
+                                        email: user.email,
+                                        telephoneNumber: user.telephoneNumber,
+                                        role: user.role,
+                                        _token: user._token._token
+                                    };
+                                    resolve({
+                                        status: 200,
+                                        message: "successfully updated",
+                                        success: true,
+                                        user: payload
+                                    });
+                                } else
+                                    resolve({status: 404, message: "Cannot find entity", success: false})
+                            })
+                        } else {
+                            reject({status: 409, message: "This email address is already taken", success: false});
+                        }
+                    }
+                }).catch(err => {
+                    reject({status: 500, message: "Error: " + err, success: false});
                 })
+
+
             }
         }).catch(err => {
             reject({status: 401, message: "Please sign in before update profile", success: false});
@@ -230,30 +278,55 @@ userService.isLoggedUser = async function (token, id) {
 /**
  * this method will change user password
  * @param id
- * @param password
+ * @param data
  * @param header
  * @returns {Promise<any>}
  */
-userService.updatePassword = function (id, password, header) {
+userService.updatePassword = function (id, data, header) {
     return new Promise(function (resolve, reject) {
 
+        let password = data.password;
+        let oldpassword = data.oldpassword;
         //if user token invalid reject the request
         userService.isLoggedUser(header._token, header._id).then(res => {
             if (!res.isLogged)
                 reject({status: 401, message: "Please sign in before update password", success: false});
             else {
-                bcrypt.hash(password, 12, (err, hash) => {
-                    var userData = {password: hash, updatedAt: moment()};
 
-                    //update password
-                    user.findOneAndUpdate({_id: id}, {$set: userData}, {upsert: false}, function (err, doc) {
-                        if (err)
-                            reject({status: 500, message: err, success: false});
-                        if (doc)
-                            resolve({status: 200, message: "Password changed", success: true});
-                        else
-                            resolve({status: 200, message: "Cannot find user", success: false})
-                    });
+                user.findOne({_id: id})
+                    .then((res) => {
+                        if (res) {
+                            //compare encrypted passwords
+                            if (bcrypt.compareSync(oldpassword, res.password)) {
+
+
+                                bcrypt.hash(password, 12, (err, hash) => {
+                                    var userData = {password: hash, updatedAt: moment()};
+
+                                    //update password
+                                    user.findOneAndUpdate({_id: id}, {$set: userData}, {upsert: false}, function (err, doc) {
+                                        if (err)
+                                            reject({status: 500, message: "Internal error occur", success: false});
+                                        if (doc)
+                                            resolve({status: 200, message: "Password changed", success: true});
+                                        else
+                                            resolve({status: 404, message: "Cannot find user", success: false})
+                                    });
+                                });
+
+                            } else {
+                                resolve({
+                                    status: 403,
+                                    message: "Given Password doesnt match with record",
+                                    success: false
+                                })
+                            }
+                        } else {
+                            reject({status: 404, message: "Cannot find user", success: false})
+                        }
+                    }).catch(err => {
+                    console.log(err);
+                    reject({status: 500, message: "Internal error occur", success: false});
                 });
             }
         }).catch(err => {

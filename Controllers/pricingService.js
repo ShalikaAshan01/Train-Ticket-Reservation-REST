@@ -25,7 +25,7 @@ pricingService.add = function (data) {
             .then(() => {
                 resolve({status: 200, message: "Successfully Added", success: true})
             }).catch(err => {
-            reject({status: 500, message: err, success: false})
+            reject({status: 500, message: "Error: " + err, success: false})
         })
     })
 
