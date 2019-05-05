@@ -99,7 +99,7 @@ scheduleFunctions.makeReservation = function (date, id, data, header) {
                         from: data.departure,
                         to: data.arrival
                     },
-                    date: date
+                    date: moment().format('MMMM Do YYYY, h:mm:ss a')
                 };
 
                 let query = {
@@ -138,7 +138,11 @@ scheduleFunctions.makeReservation = function (date, id, data, header) {
         });
     });
 };
-
+/**
+ * this method will return all reservations belongs to specific user
+ * @param id
+ * @returns {Promise<any>}
+ */
 scheduleFunctions.getReservationByID = function (id) {
     return new Promise(function (resolve, reject) {
         schedule.find({"reservation.userID": id}).then(data => {

@@ -38,7 +38,7 @@ router.put('/:id/:date', (req, res) => {
     })
 });
 /**
- * this get method will show all reservation by id
+ * this get method will show all reservation by  user id
  */
 router.get('/:id', (req, res) => {
     scheduleService.getReservationByID(req.params.id)
