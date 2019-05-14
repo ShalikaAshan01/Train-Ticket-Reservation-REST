@@ -148,7 +148,7 @@ scheduleFunctions.makeReservation = function (date, id, data, header) {
  */
 scheduleFunctions.getReservationByID = function (id) {
     return new Promise(function (resolve, reject) {
-        schedule.find({"reservation.userID": id}).then(data => {
+        schedule.find({"reservation.userID": id}).sort({'reservation.date': 'asc'}).then(data => {
             resolve({status: 200, reservation: data, message: null})
         }).catch(err => {
             reject({status: 500, reservation: null, message: "Error: " + err})

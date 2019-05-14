@@ -27,7 +27,7 @@ router.get('/:scheduleDate/:_tid', (req, res) => {
 });
 
 /**
- * this put method will update reservation object
+ * this put method will update reservation object,user reserved
  */
 router.put('/:id/:date', (req, res) => {
     scheduleService.makeReservation(req.params.date, req.params.id, req.body, req.headers)
