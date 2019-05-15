@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 var express = require('express');
 var router = express.Router();
+var twilio = require('twilio');
 
 router.post('/send', (req, res) => {
 
@@ -44,4 +45,24 @@ router.post('/send', (req, res) => {
 
 });
 
+
+router.post('/send/sms', (req, res) => {
+    const accountSid = 'ACdacf6d583eb80b8c40c84f13dcfb489f';
+    const authToken = '51223eb4c8409e5672c67022ba83aec5';
+    const client = twilio(accountSid, authToken);
+
+    const to = req.body.to;
+    const msg = req.body.msg;
+
+    client.messages
+        .create({
+            body: msg,
+            from: '+18435364742',
+            to: to
+        })
+        .then(message => res.status(200).send({success: true})
+        ).catch(err => {
+        res.status(500).send({success: false});
+    });
+});
 module.exports = router;
